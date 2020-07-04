@@ -1,0 +1,51 @@
+import os
+import json
+import numpy as np
+
+def __load_voxelgrid_data(filepath):
+    data = json.load(open(filepath).read())
+    voxels = data['voxels']
+    voxel_size = len(voxels)
+    x = np.zeros(voxel_size)
+    y = np.zeros(voxel_size)
+    z = np.zeros(voxel_size)
+    for i, voxel in enumerate(voxels):
+        x[i] = voxel['x']
+        y[i] = voxel['y']
+        z[i] = voxel['z']
+    x = x.astype(int)
+    y = y.astype(int)
+    z = z.astype(int)
+    return x,y,z
+
+def __generate_subsamples(data, subsample_ratio=0.1, n_samples=100, shape=16):
+    x,y,z = data
+    input_pointclouds = np.zeros((n_samples, shape, shape, shape))
+    for i in range(n_samples):
+        subsampled_ix = np.random.choice(len(x), int(subsample_ratio*len(x)), replace=False)
+        x_sub = x[subsampled_ix]
+        y_sub = y[subsampled_ix]
+        z_sub = z[subsampled_ix]
+        for k in range(len(x_sub)):
+            input_pointclouds[i][x_sub[k]][y_sub[k]][z_sub[k]] = 1
+    input_pointclouds = input_pointclouds.astype(int)
+    input_pointclouds = input_pointclouds.reshape(n_samples, shape, shape, shape,1)
+    return input_pointclouds
+
+def __voxel_to_pointcloud(data, n_samples=100, shape=16):
+    x,y,z = data
+    output_pointclouds = np.zeros((n_samples,shape,shape,shape))
+    for i in range(n_samples):
+        for j in range(len(x)):
+            output_pointclouds[i][x[j]][y[j]][z[j]] = 1
+    output_pointclouds = output_pointclouds.astype(int)
+    output_pointclouds = output_pointclouds.reshape(n_samples, shape, shape, shape,1)
+    return output_pointclouds
+
+def get_input_data():
+    x,y,z = __load_voxelgrid_data('..{0}data{0}cube16.json'.format(os.sep))
+    input_pointclouds = __generate_subsamples((x,y,z))
+    output_pointclouds = __voxel_to_pointcloud((x,y,z))
+    return input_pointclouds, output_pointclouds
+
+
