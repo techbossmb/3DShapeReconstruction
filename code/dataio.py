@@ -1,9 +1,10 @@
 import os
 import json
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 def __load_voxelgrid_data(filepath):
-    data = json.load(open(filepath).read())
+    data = json.loads(open(filepath).read())
     voxels = data['voxels']
     voxel_size = len(voxels)
     x = np.zeros(voxel_size)
@@ -42,10 +43,25 @@ def __voxel_to_pointcloud(data, n_samples=100, shape=16):
     output_pointclouds = output_pointclouds.reshape(n_samples, shape, shape, shape,1)
     return output_pointclouds
 
-def get_input_data():
-    x,y,z = __load_voxelgrid_data('..{0}data{0}cube16.json'.format(os.sep))
-    input_pointclouds = __generate_subsamples((x,y,z))
-    output_pointclouds = __voxel_to_pointcloud((x,y,z))
-    return input_pointclouds, output_pointclouds
+def get_shapes_data():
+    shape = 16
+    shape_files = ['cube', 'sphere', 'torus']
+    n_samples_per_shape = 100
+    input_data = np.zeros((n_samples_per_shape*len(shape_files), shape, shape, shape, 1))
+    output_data = np.zeros((n_samples_per_shape*len(shape_files), shape, shape, shape, 1))
+    for i,shape_file in enumerate(shape_files):
+        filepath = '..{0}data{0}{1}16.json'.format(os.sep, shape_file)
+        print('loading {}'.format('..{0}data{0}{1}16.json'.format(os.sep, shape_file)))
+        x,y,z = __load_voxelgrid_data(filepath)
+        input_pointclouds = __generate_subsamples((x,y,z), n_samples = n_samples_per_shape)
+        output_pointclouds = __voxel_to_pointcloud((x,y,z), n_samples = n_samples_per_shape)
+        input_data[i*n_samples_per_shape : (i+1)*n_samples_per_shape] = input_pointclouds
+        output_data[i*n_samples_per_shape : (i+1)*n_samples_per_shape] = output_pointclouds
+    return input_data, output_data
 
+def get_train_test_data():
+    print('loading train-test data')
+    x, y = get_shapes_data()
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    return x_train, x_test, y_train, y_test
 

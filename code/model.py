@@ -74,9 +74,10 @@ def build_3d_encoder_generator_model(shape=16):
     print(model.summary())
     return model
 
-def train_model(x_train, y_train, shape):
-    model = build_3d_encoder_generator_model(16)
+def train_model(train_data, val_data, shape=16):
+    print('building model')
+    model = build_3d_encoder_generator_model(shape)
     model.compile(optimizer='adam',loss='binary_crossentropy', metrics=[metrics.binary_accuracy])
-    model.fit(x_train, y_train, epochs=5, batch_size=1)
+    model.fit(train_data[0], train_data[1], validation_data=(val_data[0], val_data[1]), epochs=5, batch_size=1)
     model.save('..{0}data{0}model.h5'.format(os.sep))
     return model
