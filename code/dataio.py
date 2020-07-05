@@ -46,7 +46,7 @@ def __voxel_to_pointcloud(data, n_samples=100, shape=16):
 def get_shapes_data():
     shape = 16
     shape_files = ['cube', 'sphere', 'torus']
-    n_samples_per_shape = 100
+    n_samples_per_shape = 1000
     input_data = np.zeros((n_samples_per_shape*len(shape_files), shape, shape, shape, 1))
     output_data = np.zeros((n_samples_per_shape*len(shape_files), shape, shape, shape, 1))
     for i,shape_file in enumerate(shape_files):
